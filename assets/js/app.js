@@ -1,6 +1,12 @@
+function assert(condition, message) {
+    if (!condition) {
+        throw message || "Assertion failed.";
+    }
+}
+
 var App = {
-    columnWidth: 101,
-    rowHeight: 83
+    tileWidth: 101,
+    tileHeight: 83
 }
 
 // Keyboard inputs
@@ -25,6 +31,30 @@ var Keyboard = {
     }
 };
 
+var Sprite = function(imagePath) {
+    assert(typeof imagePath === "string");
+
+    this.path = imagePath;
+    this.x = 0;
+    this.y = 0;
+}
+
+Sprite.prototype.getRight = function() {
+    return this.x + App.tileWidth;
+}
+
+Sprite.prototype.getLeft = function() {
+    return this.x;
+}
+
+Sprite.prototype.getTop = function() {
+    return this.y;
+}
+
+Sprite.prototype.getDown = function() {
+    return this.y + App.tileHeight;
+}
+
 // Enemies our player must avoid
 var Enemy = function() {
     // Variables applied to each of our instances go here,
@@ -32,7 +62,7 @@ var Enemy = function() {
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
-    this.sprite = 'assets/images/enemy-bug.png';
+    this.sprite = new Sprite('assets/images/enemy-bug.png');
     this.spawned = false;
 };
 
@@ -42,49 +72,50 @@ Enemy.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-    this.x += this.speed;
+    this.sprite.x += this.speed;
 };
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    var sprite = this.sprite;
+    ctx.drawImage(Resources.get(sprite.path), sprite.x, sprite.y);
 };
 
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
 var Player = function() {
-    this.sprite = 'assets/images/char-cat-girl.png';
-
+    this.sprite = new Sprite('assets/images/char-cat-girl.png');
     this.dx = this.dy = 0;
-    this.x = 0;
-    this.y = 404;
+    this.sprite.x = 0;
+    this.sprite.y = 404;
 };
 
 Player.prototype.update = function(dt) {
-    this.x += this.dx;
-    this.y += this.dy;
+    this.sprite.x += this.dx;
+    this.sprite.y += this.dy;
     this.dx = this.dy = 0
 };
 
 Player.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    var sprite = this.sprite;
+    ctx.drawImage(Resources.get(sprite.path), sprite.x, sprite.y);
 };
 
 Player.prototype.handleInput = function(key) {
     switch (key) {
         case Keyboard.keyCode.up:
-            this.dy = -App.rowHeight;
+            this.dy = -App.tileHeight;
         break;
         case Keyboard.keyCode.right:
-            this.dx = App.columnWidth;
+            this.dx = App.tileWidth;
         break;
 
         case Keyboard.keyCode.down:
-            this.dy = App.rowHeight;
+            this.dy = App.tileHeight;
         break;
         case Keyboard.keyCode.left:
-            this.dx = -App.columnWidth;
+            this.dx = -App.tileWidth;
         break;
         default:
     }
