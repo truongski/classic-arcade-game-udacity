@@ -1,3 +1,8 @@
+var App = {
+    columnWidth: 101,
+    rowHeight: 83
+}
+
 // Keyboard inputs
 var Keyboard = {
     keyCode: {
@@ -50,12 +55,16 @@ Enemy.prototype.render = function() {
 // a handleInput() method.
 var Player = function() {
     this.sprite = 'assets/images/char-cat-girl.png';
+
+    this.dx = this.dy = 0;
     this.x = 0;
     this.y = 404;
 };
 
 Player.prototype.update = function(dt) {
-
+    this.x += this.dx;
+    this.y += this.dy;
+    this.dx = this.dy = 0
 };
 
 Player.prototype.render = function() {
@@ -65,17 +74,17 @@ Player.prototype.render = function() {
 Player.prototype.handleInput = function(key) {
     switch (key) {
         case Keyboard.keyCode.up:
-            this.y -= 83;
+            this.dy = -App.rowHeight;
         break;
         case Keyboard.keyCode.right:
-            this.x += 101;
+            this.dx = App.columnWidth;
         break;
 
         case Keyboard.keyCode.down:
-            this.y += 83;
+            this.dy = App.rowHeight;
         break;
         case Keyboard.keyCode.left:
-            this.x -= 101;
+            this.dx = -App.columnWidth;
         break;
         default:
     }
