@@ -2,12 +2,26 @@ function assert(condition, message) {
     if (!condition) {
         throw message || "Assertion failed.";
     }
-}
+};
 
-var App = {
-    tileWidth: 101,
-    tileHeight: 83
-}
+// Tile size
+// Used for movement and bounds
+var Tile = {
+    offsetTop: 30,
+    offsetBottom: 105,
+    width: 101,
+    height: 83,
+};
+
+// Map bounds
+// Used for bounding the player and destroying objects
+// that leave the map.
+var MapBounds = {
+    left: 0,
+    top: 0 + Tile.offsetTop, // the top edge of the water
+    right: Tile.width * 5,
+    bottom: Tile.height * 5 + Tile.offsetBottom, // where the grass changes color
+};
 
 // Keyboard inputs
 var Keyboard = {
@@ -17,20 +31,27 @@ var Keyboard = {
         right: 39,
         down: 40
     },
-    pressedKeys: {},
+    keyState: {
+        pressed: 0,
+        released: null
+    },
+    // Stores the state of the keys
+    keyStates: {},
     isPressedKey: function(keyCode) {
         if (keyCode == null)
             return false;
-        return this.pressedKeys[keyCode] != null;
+        return this.keyStates[keyCode] != this.keyState.released;
     },
     pressKey: function(keyCode) {
-        this.pressedKeys[keyCode] = 0;
+        this.keyStates[keyCode] = this.keyState.pressed;
     },
     releaseKey: function(keyCode) {
-        this.pressedKeys[keyCode] = null;
+        this.keyStates[keyCode] = this.keyState.released;
     }
 };
 
+// Sprite contains the image page, position, 
+// and bounding box.
 var Sprite = function(imagePath) {
     assert(typeof imagePath === "string");
 
@@ -40,7 +61,7 @@ var Sprite = function(imagePath) {
 }
 
 Sprite.prototype.getRight = function() {
-    return this.x + App.tileWidth;
+    return this.x + Tile.width;
 }
 
 Sprite.prototype.getLeft = function() {
@@ -48,103 +69,152 @@ Sprite.prototype.getLeft = function() {
 }
 
 Sprite.prototype.getTop = function() {
-    return this.y;
+    return this.y + Tile.offsetTop;
 }
 
-Sprite.prototype.getDown = function() {
-    return this.y + App.tileHeight;
+Sprite.prototype.getBottom = function() {
+    return this.y + Tile.height + Tile.offsetTop;
 }
 
 // Enemies our player must avoid
 var Enemy = function() {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = new Sprite('assets/images/enemy-bug.png');
     this.spawned = false;
 };
 
-// Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
-    this.sprite.x += this.speed;
+    if (this.spawned)
+    {
+        this.sprite.x += this.speed * dt;
+        if (this.sprite.getLeft() > MapBounds.right) {
+            this.spawned = false;
+        }
+    }
 };
 
-// Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
-    var sprite = this.sprite;
-    ctx.drawImage(Resources.get(sprite.path), sprite.x, sprite.y);
+    if (this.spawned)
+    {
+        var sprite = this.sprite;
+        ctx.drawImage(Resources.get(sprite.path), sprite.x, sprite.y);
+        // ctx.strokeRect(sprite.getLeft(), sprite.getTop() + Tile.offsetTop, Tile.width, Tile.height);
+    }
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+// Player that is controlled
 var Player = function() {
     this.sprite = new Sprite('assets/images/char-cat-girl.png');
     this.dx = this.dy = 0;
-    this.sprite.x = 0;
-    this.sprite.y = 404;
 };
 
 Player.prototype.update = function(dt) {
     this.sprite.x += this.dx;
     this.sprite.y += this.dy;
+
+    if (this.sprite.getTop() < 0 || 
+        this.sprite.getRight() > MapBounds.right ||
+        this.sprite.getBottom() > MapBounds.bottom ||
+        this.sprite.getLeft() < 0) 
+    {
+        this.sprite.x -= this.dx;
+        this.sprite.y -= this.dy;
+    }
+
     this.dx = this.dy = 0
 };
 
 Player.prototype.render = function() {
     var sprite = this.sprite;
     ctx.drawImage(Resources.get(sprite.path), sprite.x, sprite.y);
+    // ctx.strokeRect(sprite.getLeft(), sprite.getTop() + Tile.offsetTop, Tile.width, Tile.height);
 };
 
 Player.prototype.handleInput = function(key) {
     switch (key) {
         case Keyboard.keyCode.up:
-            this.dy = -App.tileHeight;
+            this.dy = -Tile.height;
         break;
         case Keyboard.keyCode.right:
-            this.dx = App.tileWidth;
+            this.dx = Tile.width;
         break;
 
         case Keyboard.keyCode.down:
-            this.dy = App.tileHeight;
+            this.dy = Tile.height;
         break;
         case Keyboard.keyCode.left:
-            this.dx = -App.tileWidth;
+            this.dx = -Tile.width;
         break;
         default:
     }
 };
 
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
-var allEnemies = [];
-var player = new Player();
+// Start app here.
+var App = {
+    maxEnemies: 5,
+    timeUntilNextSpawn: 0,
+    allEnemies: [],
+    player: new Player(),
+    init: function() {
+        // Input listeners 'keydown', 'keyup'
+        // 'keydown' doesn't continuously call handleInput unless
+        // it has been released. 
+        document.addEventListener('keydown', function(e) {
+            if (!Keyboard.isPressedKey(e.keyCode))
+            {
+                Keyboard.pressKey(e.keyCode);
+                App.player.handleInput(e.keyCode);
+            }
+        });
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keydown', function(e) {
-    if (!Keyboard.isPressedKey(e.keyCode))
-    {
-        Keyboard.pressKey(e.keyCode);
-        player.handleInput(e.keyCode);
-    }
-});
+        document.addEventListener('keyup', function(e) {
+            Keyboard.releaseKey(e.keyCode);
+        });
 
-document.addEventListener('keyup', function(e) {
-    Keyboard.releaseKey(e.keyCode);
-});
+        // Using the method of reusing objects by 
+        // initializing an array of enemies, 
+        // and using a state variable to indicate 
+        // whether it should be updated.
+        var i = this.maxEnemies;
+        while (i-->0)
+        {
+            var enemy = new Enemy();
+            this.allEnemies.push(enemy);
+        }
 
-var SpawnEnemy = function() {
-    var enemy = new Enemy();
-    enemy.x = -101;
-    enemy.y = [101, 202, 303, 404][Math.floor(Math.random() * 3)];
-    enemy.speed = (Math.random() * (10 - 5)) + 5;
+        // Spawn player at the start.
+        this.respawnPlayer();
+    },
+    update: function(dt) {
+        this.timeUntilNextSpawn -= dt * 1000;
+        if (this.timeUntilNextSpawn < 0)
+        {
+            this.timeUntilNextSpawn = Math.floor(Math.random() * (3000 - 500) + 500);
+            this.spawnEnemyIfAvailable();
+        }
+    },
+    spawnEnemyIfAvailable: function() {
+        for (var i in this.allEnemies)
+        {
+            var enemy = this.allEnemies[i];
+            if (!enemy.spawned)
+            {
+                enemy.sprite.x = -Tile.width;
+                // offset by 10 because not centered onto tile
+                enemy.sprite.y = 
+                    Math.floor((Math.random() * 3) + 1) * Tile.height - 10; 
+                enemy.speed = (Math.random() * (303 - 101)) + 101;
+                enemy.spawned = true;
+                break;
+            }
+        }
+    },
+    respawnPlayer: function() {
+        this.player.sprite.x = Tile.width * 2;
+        this.player.sprite.y = Tile.height * 5 - 10;
+    },
 };
 
+App.init();

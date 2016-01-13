@@ -79,6 +79,7 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
+        App.update(dt);
         updateEntities(dt);
         // checkCollisions();
     }
@@ -91,10 +92,10 @@ var Engine = (function(global) {
      * render methods.
      */
     function updateEntities(dt) {
-        allEnemies.forEach(function(enemy) {
+        App.allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
+        App.player.update();
     }
 
     /* This function initially draws the "game level", it will then call
@@ -137,6 +138,7 @@ var Engine = (function(global) {
         }
 
         renderEntities();
+        // ctx.strokeRect(MapBounds.left, MapBounds.top, MapBounds.right, MapBounds.bottom);
     }
 
     /* This function is called by the render function and is called on each game
@@ -147,11 +149,11 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        allEnemies.forEach(function(enemy) {
+        App.allEnemies.forEach(function(enemy) {
             enemy.render();
         });
 
-        player.render();
+        App.player.render();
     }
 
     /* This function does nothing but it could have been a good place to
