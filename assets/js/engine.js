@@ -138,7 +138,6 @@ var Engine = (function(global) {
         }
 
         renderEntities();
-        // ctx.strokeRect(MapBounds.left, MapBounds.top, MapBounds.right, MapBounds.bottom);
     }
 
     /* This function is called by the render function and is called on each game
