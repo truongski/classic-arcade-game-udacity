@@ -171,7 +171,7 @@ Rect.prototype.isColliding = function(other, includeSides) {
     }
 
     var corners = [this.topLeft, bottomRight, bottomLeft, topRight];
-    for (var i in corners) {
+    for (var i = 0; i < corners.length; i++) {
         var corner = corners[i];
 
         if (corner.isIn(other, inclusive)) {
@@ -396,7 +396,6 @@ Player.prototype.update = function(dt) {
     this.position.y += this.dy;
 
     var outOfBounds = !this.getRect().isColliding(MapBounds.rect, false);
-
     if (outOfBounds) {
         this.position.x -= this.dx;
         this.position.y -= this.dy;
@@ -488,7 +487,7 @@ var App = {
         }
 
         var playerRect = this.player.getRect();
-        for (var i in this.allEnemies) {
+        for (var i = 0; i < this.allEnemies.length; i++) {
             var enemy = this.allEnemies[i];
             if (enemy.spawned && playerRect.isColliding(enemy.getRect())) {
                 this.respawnPlayer();
@@ -500,11 +499,10 @@ var App = {
     },
     /** @function */
     spawnEnemyIfAvailable: function() {
-        for (var i in this.allEnemies) {
+        for (var i = 0; i < this.allEnemies.length; i++) {
             var enemy = this.allEnemies[i];
             if (!enemy.spawned) {
                 enemy.position.x = -TileSize.width;
-                // offset by 10 because not centered onto tile
                 enemy.position.y = 
                     Math.floor((Math.random() * 3) + 0) * TileSize.height; 
                 enemy.speed = (Math.random() * (303 - 101)) + 101;
