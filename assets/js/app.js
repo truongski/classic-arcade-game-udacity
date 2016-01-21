@@ -192,10 +192,10 @@ Rect.prototype.isColliding = function(other, includeSides) {
  */
 var TileSize = {
     /** @type {number} */
-    width: 101,
+    WIDTH: 101,
 
     /** @type {number} */
-    height: 83,
+    HEIGHT: 83,
 };
 
 /**
@@ -205,13 +205,13 @@ var TileSize = {
  */
 var CharacterSprite = {
     /** @type {Vector} */
-    size: new Vector(100, 76),
+    SIZE: new Vector(100, 76),
 
     /** @type {Vector} */
-    renderOffset: new Vector(0, 64),
+    RENDER_OFFSET: new Vector(0, 64),
 
     /** @type {Vector} */
-    boundingBoxOffset: new Vector(0, 137)
+    BOUNDING_BOX_OFFSET: new Vector(0, 137)
 }
 
 /** 
@@ -223,15 +223,15 @@ var CharacterSprite = {
  */
 var MapBounds = {
     /** @type {Vector} */
-    rect: new Rect(
-            CharacterSprite.boundingBoxOffset.add(new Vector(0, -TileSize.height)), 
-            new Vector(TileSize.width * 5, TileSize.height * 6)
+    BORDER: new Rect(
+            CharacterSprite.BOUNDING_BOX_OFFSET.add(new Vector(0, -TileSize.HEIGHT)), 
+            new Vector(TileSize.WIDTH * 5, TileSize.HEIGHT * 6)
         ),
 
     /** @type {Vector} */
-    water: new Rect(
-            CharacterSprite.boundingBoxOffset.add(new Vector(0, -TileSize.height)),
-            new Vector(TileSize.width * 5, TileSize.height * 1)
+    WATER: new Rect(
+            CharacterSprite.BOUNDING_BOX_OFFSET.add(new Vector(0, -TileSize.HEIGHT)),
+            new Vector(TileSize.WIDTH * 5, TileSize.HEIGHT * 1)
         )
 }
 
@@ -242,14 +242,14 @@ var MapBounds = {
  */
 var Keyboard = {
     /** key codes used */
-    keyCode: {
+    KEY_CODE: {
         left: 37,
         up: 38,
         right: 39,
         down: 40
     },
     /** states a key can be in */
-    keyState: {
+    KEY_STATE: {
         pressed: 0,
         released: null
     },
@@ -264,7 +264,7 @@ var Keyboard = {
     isPressedKey: function(keyCode) {
         if (keyCode == null)
             return false;
-        return this.keyStates[keyCode] != this.keyState.released;
+        return this.keyStates[keyCode] != this.KEY_STATE.released;
     },
     /**
      * Set a key's state as pressed.
@@ -272,7 +272,7 @@ var Keyboard = {
      * @param {number} keyCode
      */
     pressKey: function(keyCode) {
-        this.keyStates[keyCode] = this.keyState.pressed;
+        this.keyStates[keyCode] = this.KEY_STATE.pressed;
     },
     /**
      * Set a key's state as released.
@@ -280,7 +280,7 @@ var Keyboard = {
      * @param {number} keyCode
      */
     releaseKey: function(keyCode) {
-        this.keyStates[keyCode] = this.keyState.released;
+        this.keyStates[keyCode] = this.KEY_STATE.released;
     }
 };
 
@@ -317,7 +317,7 @@ var Enemy = function() {
      * @type {Sprite} 
      */
     this.sprite = new Sprite('assets/images/enemy-bug.png');
-    this.sprite.renderOffset = CharacterSprite.renderOffset;
+    this.sprite.renderOffset = CharacterSprite.RENDER_OFFSET;
 
     /** @type {Vector} */
     this.position = new Vector(0, 0);
@@ -332,7 +332,7 @@ var Enemy = function() {
  * @returns {Rect}
  */
 Enemy.prototype.getRect = function() {
-    return new Rect(this.position.add(CharacterSprite.boundingBoxOffset), CharacterSprite.size);
+    return new Rect(this.position.add(CharacterSprite.BOUNDING_BOX_OFFSET), CharacterSprite.SIZE);
 }
 
 /**
@@ -343,7 +343,7 @@ Enemy.prototype.getRect = function() {
 Enemy.prototype.update = function(dt) {
     if (this.spawned) {
         this.position.x += this.speed * dt;
-        if (this.position.x > MapBounds.rect.getBottomRight().x) {
+        if (this.position.x > MapBounds.BORDER.getBottomRight().x) {
             this.spawned = false;
         }
     }
@@ -352,9 +352,11 @@ Enemy.prototype.update = function(dt) {
 /** Render method. */
 Enemy.prototype.render = function() {
     if (this.spawned) {
-        ctx.drawImage(Resources.get(this.sprite.path), 
+        ctx.drawImage(
+            Resources.get(this.sprite.path), 
             this.position.x + this.sprite.renderOffset.x, 
-            this.position.y + this.sprite.renderOffset.y);
+            this.position.y + this.sprite.renderOffset.y
+        );
     }
 };
 
@@ -368,7 +370,7 @@ var Player = function() {
      * @type {Sprite} 
      */
     this.sprite = new Sprite('assets/images/char-cat-girl.png');
-    this.sprite.renderOffset = CharacterSprite.renderOffset;
+    this.sprite.renderOffset = CharacterSprite.RENDER_OFFSET;
 
     /** @type {Vector} */
     this.position = new Vector(0, 0);
@@ -383,7 +385,7 @@ var Player = function() {
  * returns {Rect}
  */
 Player.prototype.getRect = function() {
-    return new Rect(this.position.add(CharacterSprite.boundingBoxOffset), CharacterSprite.size);
+    return new Rect(this.position.add(CharacterSprite.BOUNDING_BOX_OFFSET), CharacterSprite.SIZE);
 }
 
 /**
@@ -395,7 +397,7 @@ Player.prototype.update = function(dt) {
     this.position.x += this.dx;
     this.position.y += this.dy;
 
-    var outOfBounds = !this.getRect().isColliding(MapBounds.rect, false);
+    var outOfBounds = !this.getRect().isColliding(MapBounds.BORDER, false);
     if (outOfBounds) {
         this.position.x -= this.dx;
         this.position.y -= this.dy;
@@ -419,18 +421,18 @@ Player.prototype.render = function() {
  */
 Player.prototype.handleInput = function(key) {
     switch (key) {
-        case Keyboard.keyCode.up:
-            this.dy = -TileSize.height;
+        case Keyboard.KEY_CODE.up:
+            this.dy = -TileSize.HEIGHT;
         break;
-        case Keyboard.keyCode.right:
-            this.dx = TileSize.width;
+        case Keyboard.KEY_CODE.right:
+            this.dx = TileSize.WIDTH;
         break;
 
-        case Keyboard.keyCode.down:
-            this.dy = TileSize.height;
+        case Keyboard.KEY_CODE.down:
+            this.dy = TileSize.HEIGHT;
         break;
-        case Keyboard.keyCode.left:
-            this.dx = -TileSize.width;
+        case Keyboard.KEY_CODE.left:
+            this.dx = -TileSize.WIDTH;
         break;
         default:
     }
@@ -465,10 +467,7 @@ var App = {
             Keyboard.releaseKey(e.keyCode);
         });
 
-        // Using the method of reusing objects by 
-        // initializing an array of enemies, 
-        // and using a state variable to indicate 
-        // whether it should be updated.
+        
         var i = this.maxEnemies;
         while (i-->0) {
             var enemy = new Enemy();
@@ -494,17 +493,22 @@ var App = {
             }
         }
 
-        if (this.player.getRect().isColliding(MapBounds.water, false))
+        if (this.player.getRect().isColliding(MapBounds.WATER, false))
             this.respawnPlayer();
     },
-    /** @function */
+    /** 
+     * @function 
+     * @description Spawn an enemy from the enemy array if it isn't spawned.
+     * Using the method of reusing objects by keeping an array of enemies, 
+     * and using a state variable to indicate whether it should be updated.
+     */
     spawnEnemyIfAvailable: function() {
         for (var i = 0; i < this.allEnemies.length; i++) {
             var enemy = this.allEnemies[i];
-            if (!enemy.spawned) {
-                enemy.position.x = -TileSize.width;
+            if (enemy && !enemy.spawned) {
+                enemy.position.x = -TileSize.WIDTH;
                 enemy.position.y = 
-                    Math.floor((Math.random() * 3) + 0) * TileSize.height; 
+                    Math.floor((Math.random() * 3) + 0) * TileSize.HEIGHT; 
                 enemy.speed = (Math.random() * (303 - 101)) + 101;
                 enemy.spawned = true;
                 break;
@@ -513,8 +517,8 @@ var App = {
     },
     /** @function */
     respawnPlayer: function() {
-        this.player.position.x = TileSize.width * 2;
-        this.player.position.y = TileSize.height * 4;
+        this.player.position.x = TileSize.WIDTH * 2;
+        this.player.position.y = TileSize.HEIGHT * 4;
     },
 };
 
