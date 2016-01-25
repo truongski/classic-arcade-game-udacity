@@ -143,6 +143,7 @@ var Engine = (function(global) {
         }
 
         renderEntities();
+        App.postRender();
     }
 
     /* This function is called by the render function and is called on each game

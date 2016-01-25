@@ -449,6 +449,7 @@ Player.prototype.handleInput = function(key) {
 var App = {
     maxEnemies: 5,
     timeUntilNextSpawn: 0,
+    score: 0,
     allEnemies: [],
     player: new Player(),
     /** @function */
@@ -489,12 +490,19 @@ var App = {
         for (var i = 0; i < this.allEnemies.length; i++) {
             var enemy = this.allEnemies[i];
             if (enemy.spawned && playerRect.isColliding(enemy.getRect())) {
+                this.score = 0;
                 this.respawnPlayer();
             }
         }
 
-        if (this.player.getRect().isColliding(MapBounds.WATER, false))
+        if (this.player.getRect().isColliding(MapBounds.WATER, false)) {
+            this.score++;
             this.respawnPlayer();
+        }
+    },
+    postRender: function() {
+        ctx.font = "24px serif";
+        ctx.fillText("Score: " + this.score, 10, 80);
     },
     /** 
      * @function 
