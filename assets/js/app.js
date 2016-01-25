@@ -7,6 +7,7 @@ function assert(condition, message) {
     }
 };
 
+/* Used to show hitboxes. */
 function strokeRect(rect) {
     assert(rect instanceof Rect);
 
@@ -51,6 +52,15 @@ Vector.prototype.add = function(other) {
     assert(other instanceof Vector);
 
     return new Vector(this.x + other.x, this.y + other.y);
+}
+
+/**
+ * Multiply this vector with a scalar.
+ */
+Vector.prototype.multiply = function(scalar) {
+    assert(typeof scalar === "number", '"scalar" must be of type number');
+
+    return new Vector(this.x * scalar, this.y * scalar);
 }
 
 /**
@@ -385,7 +395,10 @@ var Player = function() {
  * returns {Rect}
  */
 Player.prototype.getRect = function() {
-    return new Rect(this.position.add(CharacterSprite.BOUNDING_BOX_OFFSET), CharacterSprite.SIZE);
+    var hitBoxAdjustment = new Vector(18, 0);
+    return new Rect(
+        this.position.add(CharacterSprite.BOUNDING_BOX_OFFSET).add(hitBoxAdjustment), 
+        CharacterSprite.SIZE.add(hitBoxAdjustment.multiply(-2)));
 }
 
 /**
