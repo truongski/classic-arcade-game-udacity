@@ -5,7 +5,7 @@ function assert(condition, message) {
     if (!condition) {
         throw message || "Assertion failed.";
     }
-};
+}
 
 /* Used to show hitboxes. */
 function strokeRect(rect) {
@@ -35,11 +35,11 @@ var Vector = function(x, y) {
         this.x = 0;
         this.y = 0;
     } else {
-        assert(typeof x === "number" && typeof y === "number")
+        assert(typeof x === "number" && typeof y === "number");
         this.x = x;
         this.y = y;
     }
-}
+};
 
 /**
  * Add this vector with another vector.
@@ -52,7 +52,7 @@ Vector.prototype.add = function(other) {
     assert(other instanceof Vector);
 
     return new Vector(this.x + other.x, this.y + other.y);
-}
+};
 
 /**
  * Multiply this vector with a scalar.
@@ -61,7 +61,7 @@ Vector.prototype.multiply = function(scalar) {
     assert(typeof scalar === "number", '"scalar" must be of type number');
 
     return new Vector(this.x * scalar, this.y * scalar);
-}
+};
 
 /**
  * Check whether this position vector is inside of a
@@ -82,13 +82,13 @@ Vector.prototype.isIn = function(rect, includeSides) {
     }
 
     var bottomRight = rect.getBottomRight();
-    if (inclusive == true) {
+    if (inclusive === true) {
         if (this.x >= rect.topLeft.x && this.x <= bottomRight.x &&
             this.y >= rect.topLeft.y && this.y <= bottomRight.y) {
             return true;
         }
     }
-    else if (inclusive == false){
+    else if (inclusive === false){
         if (this.x > rect.topLeft.x && this.x < bottomRight.x &&
             this.y > rect.topLeft.y && this.y < bottomRight.y) {
             return true;
@@ -96,7 +96,7 @@ Vector.prototype.isIn = function(rect, includeSides) {
     }
 
     return false;
-}
+};
 
 /**
  * Override toString.
@@ -104,7 +104,7 @@ Vector.prototype.isIn = function(rect, includeSides) {
  */
 Vector.prototype.toString = function() {
     return "(" + this.x + ", " + this.y + ")";
-}
+};
 
 /**
  * @typedef {object} Rect
@@ -126,7 +126,7 @@ var Rect = function(topLeft, size) {
     assert(size.x > 0 && size.y > 0, "size must be positive.");
     this.topLeft = topLeft;
     this.size = size;
-}
+};
 
 /**
  * Set the location of the rectangle.
@@ -138,7 +138,7 @@ Rect.prototype.setLocation = function(x, y) {
     assert(typeof x === "number" && typeof y === "number");
 
     this.topLeft = new Vector(x, y);
-}
+};
 
 /**
  * Get the bottom right point of the rectangle.
@@ -147,7 +147,7 @@ Rect.prototype.setLocation = function(x, y) {
  */
 Rect.prototype.getBottomRight = function() {
     return new Vector(this.topLeft.x + this.size.x, this.topLeft.y + this.size.y);
-}
+};
 
 /**
  * Check whether this rectangle is colliding
@@ -190,7 +190,7 @@ Rect.prototype.isColliding = function(other, includeSides) {
     }
 
     return false;
-}
+};
 
 /* Constants */
 
@@ -222,7 +222,7 @@ var CharacterSprite = {
 
     /** @type {Vector} */
     BOUNDING_BOX_OFFSET: new Vector(0, 137)
-}
+};
 
 /** 
  * Map bounds
@@ -243,7 +243,7 @@ var MapBounds = {
             CharacterSprite.BOUNDING_BOX_OFFSET.add(new Vector(0, -TileSize.HEIGHT)),
             new Vector(TileSize.WIDTH * 5, TileSize.HEIGHT * 1)
         )
-}
+};
 
 /**
  * Keyboard inputs and events
@@ -272,7 +272,7 @@ var Keyboard = {
      * @returns {boolean}
      */
     isPressedKey: function(keyCode) {
-        if (keyCode == null)
+        if (keyCode === null)
             return false;
         return this.keyStates[keyCode] != this.KEY_STATE.released;
     },
@@ -315,7 +315,7 @@ var Sprite = function(imagePath) {
     this.path = imagePath;
     /** @member {Vector} */
     this.renderOffset = new Vector();
-}
+};
 
 /** 
  * Enemies our player must avoid.
@@ -343,7 +343,7 @@ var Enemy = function() {
  */
 Enemy.prototype.getRect = function() {
     return new Rect(this.position.add(CharacterSprite.BOUNDING_BOX_OFFSET), CharacterSprite.SIZE);
-}
+};
 
 /**
  * Update method.
@@ -399,7 +399,7 @@ Player.prototype.getRect = function() {
     return new Rect(
         this.position.add(CharacterSprite.BOUNDING_BOX_OFFSET).add(hitBoxAdjustment), 
         CharacterSprite.SIZE.add(hitBoxAdjustment.multiply(-2)));
-}
+};
 
 /**
  * Update method.
